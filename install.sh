@@ -200,34 +200,40 @@ function install_neovim() {
 function install_polybar(){
     echo -e "\n${purpleColour}[*] Instalando Polybar (Última Release)...${endColour}\n"
 
-    # 1. Instalar dependencias extra SOLO para Polybar (son muchas, lo siento!)
-    # Sphinx es para la documentación, libuv, etc.
-    apt install -y libuv1-dev libcurl4-openssl-dev libxml2-dev ccache \
+    # 1. Instalar dependencias
+    # HE QUITADO 'libcurl4-openssl-dev' porque causa conflicto en tu Parrot.
+    # HE QUITADO 'python3-sphinx' porque vamos a desactivar la documentación para evitar errores.
+    echo -e "   [i] Instalando dependencias de compilación..."
+    apt install -y libuv1-dev libxml2-dev ccache \
     libxcb-xkb-dev libxcb-randr0-dev libxcb-ewmh-dev libxcb-icccm4-dev \
-    libxcb-cursor-dev libxcb-xrm-dev libxcb-shape0-dev python3-sphinx
+    libxcb-cursor-dev libxcb-xrm-dev libxcb-shape0-dev 2>/dev/null
 
     cd /usr/local/src
 
-    # 2. Obtener la URL del código fuente (Source Code .tar.gz)
+    # 2. Descargar código
     echo -e "   [i] Buscando la última versión..."
     polybar_url=$(curl -s https://api.github.com/repos/polybar/polybar/releases/latest | grep "tarball_url" | cut -d '"' -f 4)
 
-    # 3. Descargar y descomprimir
     wget "$polybar_url" -O polybar.tar.gz
     tar -xf polybar.tar.gz
-    
-    # Borramos el archivo comprimido para que el 'cd' no se confunda
-    rm polybar.tar.gz
-    
-    # El nombre de la carpeta cambia según la versión (ej: polybar-3.7.1), usamos comodín *
-    cd polybar* # 4. Compilar (El método oficial de Polybar usa cmake)
+    rm polybar.tar.gz # Importante borrar esto para que el cd no falle
+
+    # 3. Compilar
+    cd polybar* # Limpieza preventiva
+    rm -rf build
     mkdir build
     cd build
-    cmake ..
-    make -j$(nproc)  # -j$(nproc) usa todos los núcleos de tu CPU para ir rápido
+    
+    # --- LA SOLUCIÓN MÁGICA ---
+    # -DBUILD_DOC=OFF:    No crea manuales (evita error de sphinx)
+    # -DENABLE_CURL=OFF:  No usa red (evita error de libcurl)
+    # --------------------------
+    cmake .. -DBUILD_DOC=OFF -DENABLE_CURL=OFF
+    
+    make -j$(nproc)
     make install
 
-    echo -e "${greenColour}[+] Polybar instalado.${endColour}"
+    echo -e "${greenColour}[+] Polybar instalado correctamente.${endColour}"
     
     # Volver a casa
     cd ~
