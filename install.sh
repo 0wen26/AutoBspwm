@@ -45,26 +45,22 @@ fi
 # --- FUNCIÓN DE DEPENDENCIAS ---
 #
 function install_dependencies() {
-  echo -e "\n${yellowColour}[*] Comprobando distribución y dependencias... ${endColour}\n"
-  
-  if grep -iq "Parrot" /etc/os-release; then
-    echo -e "   [i] Distribución detectada: ${purpleColour}Parrot OS${endColour}"
-    echo -e "   [i] Modo precavido activado: Solo actualizaremos listas (apt update)."
-    apt update
-  else
-    echo -e "   [i] Distribución detectada: ${blueColour}Linux Genérico (Debian,Ubuntu,Kali)${endColour}"
-    echo -e "   [i] Actualizando listas de paquetes..."
-    apt update
-  fi
+    echo -e "\n${yellowColour}[*] Comprobando distribución y dependencias... ${endColour}\n"
+    
+    if grep -iq "Parrot" /etc/os-release; then
+        apt update
+    else
+        apt update
+    fi
 
-  # HE AÑADIDO: libxcb-xkb-dev (para sxhkd) y libcairo2-dev (para polybar)
-  echo -e "   [i] Instalando TODAS las dependencias necesarias..."
-  
-  apt install -y build-essential git vim xcb cmake pkg-config \
-  libxcb-util0-dev libxcb-ewmh-dev libxcb-randr0-dev \
-  libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xinerama0-dev \
-  libasound2-dev libxcb-xtest0-dev libxcb-shape0-dev \
-  libxcb-xkb-dev libcairo2-dev libx11-xcb-dev libxcb-composite0-dev
+    echo -e "   [i] Instalando TODAS las dependencias necesarias..."
+    
+    # HE AÑADIDO: libxcb-xkb-dev (VITAL para sxhkd) y libcairo2-dev (VITAL para polybar)
+    apt install -y build-essential git vim xcb cmake pkg-config \
+    libxcb-util0-dev libxcb-ewmh-dev libxcb-randr0-dev \
+    libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xinerama0-dev \
+    libasound2-dev libxcb-xtest0-dev libxcb-shape0-dev \
+    libxcb-xkb-dev libcairo2-dev libx11-xcb-dev libxcb-composite0-dev
 }
 
 # --- FUNCIÓN INSTALAR DOTFILES (CONFIGURACIÓN) ---
@@ -131,23 +127,26 @@ function install_fonts() {
 function install_bspwm_sxhkd() {
   echo -e "\n${blueColour}[*] Instalando BSPWM y SXHKD...${endColour}\n"
 
-  # Nos movemos a una carpeta de fuentes del sistema
   cd /usr/local/src
 
-  # 1. Instalamos bspwm
-  if [ ! -d "bspwm" ]; then # Si la carpeta no existe, clonamos
+  # 1. Instalar BSPWM
+  if [ ! -d "bspwm" ]; then
     git clone https://github.com/baskerville/bspwm.git
   fi
 
   cd bspwm
   make
   make install
+  
+  # --- CORRECCIÓN VITAL PARA QUE APAREZCA EN EL LOGIN ---
+  # Copiamos el archivo de sesión a /usr/share/xsessions (sin 'local')
+  cp contrib/freedesktop/bspwm.desktop /usr/share/xsessions/
+  # ------------------------------------------------------
 
-  # Volvemos atrás
   cd ..
 
-  # 2. Instalamos sxhkd
-  if [ ! -d "sxhkd" ]; then
+  # 2. Instalar SXHKD
+  if [ ! -d "sxhkd" ]; then # Espacio corregido en el corchete
     git clone https://github.com/baskerville/sxhkd.git
   fi
 
@@ -155,11 +154,8 @@ function install_bspwm_sxhkd() {
   make
   make install
 
-  # Volvemos al directorio original del usuario
   cd ~
-
   echo -e "\n${greenColour}[+] BSPWM y SXHKD instalados correctamente.${endColour}"
-
 }
 
 # --- FUNCIÓN INSTALAR NEOVIM (LATEST RELEASE) ---
@@ -203,34 +199,28 @@ function install_neovim() {
 function install_polybar(){
     echo -e "\n${purpleColour}[*] Instalando Polybar (Git method)...${endColour}\n"
 
-    # 1. Aseguramos dependencias críticas para que no falle luego
-    # libcairo2-dev es OBLIGATORIA para los gráficos
-    apt install -y libuv1-dev libxml2-dev ccache \
-    libxcb-xkb-dev libxcb-randr0-dev libxcb-ewmh-dev libxcb-icccm4-dev \
-    libxcb-cursor-dev libxcb-xrm-dev libxcb-shape0-dev libcairo2-dev 2>/dev/null
+    # Dependencias extra para polybar (python-sphinx opcional, lo quitamos para evitar líos)
+    apt install -y libuv1-dev libxml2-dev 2>/dev/null
 
     cd /usr/local/src
 
-    # 2. Limpieza de intentos anteriores (IMPORTANTE)
-    rm -rf polybar* # 3. Descargamos usando GIT con RECURSIVE (La clave del éxito)
-    echo -e "   [i] Clonando el repositorio completo (esto puede tardar un poco)..."
-    git clone --recursive https://github.com/polybar/polybar.git
+    # Limpieza
+    rm -rf polybar* # CLONADO RECURSIVO (Soluciona el error de xpp/cmake)
+    if [ ! -d "polybar" ]; then
+        git clone --recursive https://github.com/polybar/polybar.git
+    fi
 
     cd polybar
-
-    # 4. Compilar
     mkdir build
     cd build
     
-    # Desactivamos docs y curl para evitar errores de red/sphinx
+    # Desactivamos docs y curl para máxima compatibilidad
     cmake .. -DBUILD_DOC=OFF -DENABLE_CURL=OFF
     
     make -j$(nproc)
     make install
 
-    echo -e "${greenColour}[+] Polybar instalado correctamente.${endColour}"
-    
-    # Volver a casa
+    echo -e "${greenColour}[+] Polybar instalado.${endColour}"
     cd ~
 }
 
