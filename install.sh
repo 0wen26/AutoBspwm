@@ -60,7 +60,8 @@ function install_dependencies() {
     libxcb-util0-dev libxcb-ewmh-dev libxcb-randr0-dev \
     libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xinerama0-dev \
     libasound2-dev libxcb-xtest0-dev libxcb-shape0-dev \
-    libxcb-xkb-dev libcairo2-dev libx11-xcb-dev libxcb-composite0-dev
+    libxcb-xkb-dev libcairo2-dev libx11-xcb-dev libxcb-composite0-dev \
+    xcb-proto python3-xcbgen
 }
 
 # --- FUNCIÓN INSTALAR DOTFILES (CONFIGURACIÓN) ---
