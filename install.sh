@@ -46,9 +46,7 @@ fi
 #
 function install_dependencies() {
   echo -e "\n${yellowColour}[*] Comprobando distribución y dependencias... ${endColour}\n"
-  # Leemos el nombre de la distribución ( el ID, que suele ser 'debian', 'kali', 'parrot')
-  # Usamos 'grep' para sacar la línea y 'cut' para quedarnos con el nombre limpio.
-  #
+  
   if grep -iq "Parrot" /etc/os-release; then
     echo -e "   [i] Distribución detectada: ${purpleColour}Parrot OS${endColour}"
     echo -e "   [i] Modo precavido activado: Solo actualizaremos listas (apt update)."
@@ -58,10 +56,15 @@ function install_dependencies() {
     echo -e "   [i] Actualizando listas de paquetes..."
     apt update
   fi
-  #Instalamos las herramientas básicas de compilación y las librerias gráficas XCB
-  # - build-essential: Trae el compilador 'gcc' y 'make'
-  # - libxcb-*: Son las piezas de lego para manejar ventanas
-  apt install -y build-essential git vim xcb cmake pkg-config libxcb-util0-dev libxcb-ewmh-dev libxcb-randr0-dev libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xinerama0-dev libasound2-dev libxcb-xtest0-dev libxcb-shape0-dev
+
+  # HE AÑADIDO: libxcb-xkb-dev (para sxhkd) y libcairo2-dev (para polybar)
+  echo -e "   [i] Instalando TODAS las dependencias necesarias..."
+  
+  apt install -y build-essential git vim xcb cmake pkg-config \
+  libxcb-util0-dev libxcb-ewmh-dev libxcb-randr0-dev \
+  libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xinerama0-dev \
+  libasound2-dev libxcb-xtest0-dev libxcb-shape0-dev \
+  libxcb-xkb-dev libcairo2-dev libx11-xcb-dev libxcb-composite0-dev
 }
 
 # --- FUNCIÓN INSTALAR DOTFILES (CONFIGURACIÓN) ---
