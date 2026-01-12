@@ -21,9 +21,9 @@ grayColour="\e[0;37m\033[1m"
 # Esta función se ejecutará si el usuario aprieta Ctrl+C para cancelar.
 # Es muy importante limpiar la pantalla y salir ordenadamente.
 
-function ctrl_c(){
-    echo -e "\n\n${redColour}[!] Saliendo...${endColour}\n"
-    exit 1
+function ctrl_c() {
+  echo -e "\n\n${redColour}[!] Saliendo...${endColour}\n"
+  exit 1
 }
 
 # 'trap' es un comando que "atrapa" señales. SIGINT es la señal de Ctrl+C.
@@ -44,7 +44,7 @@ fi
 #
 # --- FUNCIÓN DE DEPENDENCIAS ---
 #
-function install_dependencies(){
+function install_dependencies() {
   echo -e "\n${yellowColour}[*] Comprobando distribución y dependencias... ${endColour}\n"
   # Leemos el nombre de la distribución ( el ID, que suele ser 'debian', 'kali', 'parrot')
   # Usamos 'grep' para sacar la línea y 'cut' para quedarnos con el nombre limpio.
@@ -66,19 +66,18 @@ function install_dependencies(){
 
 # --- FUNCIÓN INSTALAR DOTFILES (CONFIGURACIÓN) ---
 #
-function install_dotfiles(){
+function install_dotfiles() {
   echo -e "\n${turquoiseColour}[*] Copiando archivos de configuración (Dotfiles)...${endColour}\n"
-  
+
   # Verificamos que se esté ejecutando con sudo para poder detectar al usuario real
   if [ -z "$SUDO_USER" ]; then
     echo -e "${redColour}[!] Error: No se detectó el usuario real. ¿Ejecustaste con sudo?${endColour}"
     exit -1
   fi
-  
+
   # Definimos la ruta real del usuario
   real_user_home="/home/$SUDO_USER"
   config_src="$(dirname "$0")/config" #ruta donde estan tus carpetas copiadas
-
 
   #entramos a la carpeta origen
   cd "$config_src" || exit 1
@@ -89,7 +88,6 @@ function install_dotfiles(){
 
   # Creamos la carpeta .config si no existe ( mkdir -p no da error si ya existe)
   mkdir -p "$real_user_home/.config"
-
 
   # Copiamos todo recursivamente (-r) a la carpeta .config del usuario
   # Usamos 'cp -r *' para copiar todas las carpetas que tengas ahí
@@ -106,12 +104,11 @@ function install_dotfiles(){
   # ---------------------------------------------------------
   #
   echo -e "   [i] Copiando configuraciones para el usuario ${redColour}root${endColour}"
-  
+
   mkdir -p /root/.config
 
   # Copiamos todo también al home de root
   cp -r * /root/.config
-
 
   echo -e "${greenColour}[+] Configuraciones copiadas correctamente (user + root) y permisos corregidos.${endColour}"
 
@@ -119,7 +116,7 @@ function install_dotfiles(){
 
 # --- FUNCIÓN INSTALAR FUENTES ---
 #
-function install_fonts(){
+function install_fonts() {
   echo -e "\n${turquoiseColour}[*] Instalando fuentes (Hack Nerd Fonts)...${endColour}"
 
   # Definimos la carpeta de origen ( tu carpeta local ) y destino (sistema)
@@ -143,9 +140,9 @@ function install_fonts(){
 
 }
 
-# --- FUNCIÓN INSTALAR BSPWM Y SXHKD --- 
+# --- FUNCIÓN INSTALAR BSPWM Y SXHKD ---
 
-function install_bspwm_sxhkd(){
+function install_bspwm_sxhkd() {
   echo -e "\n${blueColour}[*] Instalando BSPWM y SXHKD...${endColour}\n"
 
   # Nos movemos a una carpeta de fuentes del sistema
@@ -167,7 +164,7 @@ function install_bspwm_sxhkd(){
   if [ ! -d "sxhkd"]; then
     git clone https://github.com/baskerville/sxhkd.git
   fi
-  
+
   cd sxhkd
   make
   make install
@@ -181,18 +178,18 @@ function install_bspwm_sxhkd(){
 
 # --- FUNCIÓN INSTALAR NEOVIM (LATEST RELEASE) ---
 #
-function install_neovim(){
+function install_neovim() {
   echo -e "\n${blueColour}[*] Instalando la última versión estable de Neovim...${endColour}\n"
 
   cd /usr/local/src
-  
-   # TRUCO DE EXPERTO
-   # Usamos curl para ver la info de la última release.
-   # Usamos grep para buscar la línea que tiene el archivo para linux de 64 bits
-   # Limpiamos la URL con cut y tr
+
+  # TRUCO DE EXPERTO
+  # Usamos curl para ver la info de la última release.
+  # Usamos grep para buscar la línea que tiene el archivo para linux de 64 bits
+  # Limpiamos la URL con cut y tr
 
   wget_url=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | grep "browser_download_url.*nvim-linux-x86_64.tar.gz" | cut -d : -f 2,3 | tr -d \" | head -n 1)
-  
+
   echo -e "   [i] Descargando desde: $wget_url"
 
   # Descargamos el archivo
@@ -200,7 +197,7 @@ function install_neovim(){
 
   # Descomprimimos
   tar -xzf nvim-linux-x86_64.tar.gz
-  
+
   # Instalamos ( movemos la carpeta y creamos el enlace simbolico)
   # Borramos si existia una version anterior para no mezclar
   rm -rf /opt/nvim
@@ -216,12 +213,90 @@ function install_neovim(){
 
 }
 
+function install_polybar() {
+  echo -e "\n${purpleColour}[*] Instalando polybar ultima release...${endColour}\n"
+
+  #1. Instalar dependencias extra solo para polybar
+  # Sphinx es para la documentacion, libuv , etc.
+
+  apt install -y libuv1-dev libcurl4-openssl-dev libxml2-dev ccache libxcb-xkb-dev libxcb-randr0-dev libxcb-ewmh-dev libxcb-icccm4-dev libxcb-cursor-dev libxcb-xrm-dev libxcb-shape0-dev python3-sphinx
+
+  cd /usr/local/src/
+
+  #2. obtener la url del codigo fuente
+
+  # El nombre de la carpeta cambia segun la version usamos comodin *
+  cd polybar* # 4. compilar
+  mkdir build
+  cmake ..
+  make -j$(nproc)
+  make install
+
+  echo -e "${greenColour}[+] polybar instlada.${endColour}"
+
+  # Volvemos a casa
+  cd ~
+
+}
+# ---- FUNCION INSTALAR PYCOM ---
+function install_picom() {
+  echo -e "\n${purpleColour}[+] Instalando picom (efectos visuales )...${endColour}"
+
+  #Dependendicas para compilar picom
+  apt install -y libconfig-dev libdbus-1-dev libegl-dev libev-dev libegl-dev \
+    libepoxy-dev libpcre2-dev libpixman-1-dev libx11-xcb-dev libxcb1-dev \
+    libxcb-composite0-dev libxcb-damage0-dev libxcb-glx0-dev libxcb-image0-dev \
+    libxcb-present-dev libxcb-randr0-dev libxcb-render0-dev libxcb-render-util0-dev \
+    libxcb-shape0-dev libxcb-util-dev libxcb-xfixes0-dev meson ninja-build uthash-dev
+
+  cd /usr/local/src/
+
+  #Clonamos el repositorio
+  if [ ! -d "picom" ]; then
+    git clone https://github.com/yshui/picom.git
+  fi
+
+  cd picom
+
+  #compilacion moderna con Meson y ninja 
+  meson setup --buildtype=release build 
+  ninja -C build
+  ninja -C build install
+
+  echo -e "${$greenColour}[+] Picom instalado.${endColour}"
+}
+
+function install_tools(){
+  echo -e "\n${yellowColour}[+] Instalando herramientas extra (rofi, feh, lsd, bat)...${endColour}"
+
+  #1. rofi, feh y f2f con apt
+  apt install -y rofi feh fzf
+
+  #2 instalar LSD (ls con esteroides) desde github release
+  echo -e "    [i] Instalando LSD..."
+  cd /usr/local/src/
+  #buscamos la url del .deb
+  lsd_url=$(curl -s https://api.github.com/repos/lsd-rs/lsd/releases/latest | grep "browser_download_url.*amd64.deb" | cut -d : -f 2,3 | tr -d \n" | head -n 1)
+  wget "$lsd_url" -O lsd.deb
+  dpkg -i lsd.deb
+  rm lsd.deb
+
+  #instalar BAT (cat con esteroides)
+  echo -e "   [i] Instalando BAT..."
+  bat_url=$(curl -s https://api.github.com/repos/sharkdp/bat/releases/latest | grep "browser_download_url.*amd64.deb" | cut -d : -f 2,3 | tr -d \n" | head -n 1)
+  wget "$bat_url" -O bat.deb
+  dpkg -i bat.deb
+  rm bat.deb
+
+  echo -e "${greenColour}[+] Herramientas instaladas.${endColour}"
+
+
+}
 
 # --- LLAMADAS PRINCIPALES ---
 install_dependencies
 install_dotfiles
 install_fonts
 install_bspwm_sxhkd
-
-
-
+install_polybar
+install_picom
