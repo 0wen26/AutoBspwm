@@ -276,14 +276,14 @@ function install_tools(){
   echo -e "    [i] Instalando LSD..."
   cd /usr/local/src/
   #buscamos la url del .deb
-  lsd_url=$(curl -s https://api.github.com/repos/lsd-rs/lsd/releases/latest | grep "browser_download_url.*amd64.deb" | cut -d : -f 2,3 | tr -d \n" | head -n 1)
+  lsd_url=$(curl -s https://api.github.com/repos/lsd-rs/lsd/releases/latest | grep "browser_download_url.*amd64.deb" | cut -d : -f 2,3 | tr -d \n | head -n 1)
   wget "$lsd_url" -O lsd.deb
   dpkg -i lsd.deb
   rm lsd.deb
 
   #instalar BAT (cat con esteroides)
   echo -e "   [i] Instalando BAT..."
-  bat_url=$(curl -s https://api.github.com/repos/sharkdp/bat/releases/latest | grep "browser_download_url.*amd64.deb" | cut -d : -f 2,3 | tr -d \n" | head -n 1)
+  bat_url=$(curl -s https://api.github.com/repos/sharkdp/bat/releases/latest | grep "browser_download_url.*amd64.deb" | cut -d : -f 2,3 | tr -d \n | head -n 1)
   wget "$bat_url" -O bat.deb
   dpkg -i bat.deb
   rm bat.deb
