@@ -69,49 +69,32 @@ function install_dependencies() {
 function install_dotfiles() {
   echo -e "\n${turquoiseColour}[*] Copiando archivos de configuración (Dotfiles)...${endColour}\n"
 
-  # Verificamos que se esté ejecutando con sudo para poder detectar al usuario real
+  # Verificamos sudo
   if [ -z "$SUDO_USER" ]; then
     echo -e "${redColour}[!] Error: No se detectó el usuario real. ¿Ejecustaste con sudo?${endColour}"
-    exit -1
+    exit 1
   fi
 
-  # Definimos la ruta real del usuario
   real_user_home="/home/$SUDO_USER"
-  config_src="$(dirname "$0")/config" #ruta donde estan tus carpetas copiadas
+  config_src="$(dirname "$0")/config"
 
-  #entramos a la carpeta origen
+  # --- AQUÍ ENTRAMOS A LA CARPETA CONFIG ---
   cd "$config_src" || exit 1
 
-  # 1. COPIA PARA EL USUARIO NORMAL
-  #
   echo -e "   [i] Copiando configuraciones para el usuario: ${purpleColour}$SUDO_USER${endColour}"
-
-  # Creamos la carpeta .config si no existe ( mkdir -p no da error si ya existe)
   mkdir -p "$real_user_home/.config"
-
-  # Copiamos todo recursivamente (-r) a la carpeta .config del usuario
-  # Usamos 'cp -r *' para copiar todas las carpetas que tengas ahí
   cp -r * "$real_user_home/.config/"
-
-  # -- PASO CRÍTICO: ARREGLAR PERMISOS ---
-  #  Al copiar siendo root, los archivos ahora pertenecen a root.
-  #  El usuario no podría editar sus propios archivos. ¡Hay que devolvérselos!
-
   chown -R "$SUDO_USER:$SUDO_USER" "$real_user_home/.config"
 
-  # ---------------------------------------------------------
-  # 2. COPIA PARA EL USUARIO ROOT
-  # ---------------------------------------------------------
-  #
   echo -e "   [i] Copiando configuraciones para el usuario ${redColour}root${endColour}"
-
   mkdir -p /root/.config
-
-  # Copiamos todo también al home de root
   cp -r * /root/.config
 
-  echo -e "${greenColour}[+] Configuraciones copiadas correctamente (user + root) y permisos corregidos.${endColour}"
+  echo -e "${greenColour}[+] Configuraciones copiadas.${endColour}"
 
+  # --- ¡ESTA ES LA LÍNEA MÁGICA QUE FALTA! ---
+  # Salimos de la carpeta 'config' y volvemos a la raíz del instalador
+  cd .. 
 }
 
 # --- FUNCIÓN INSTALAR FUENTES ---
