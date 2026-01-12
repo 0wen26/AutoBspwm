@@ -144,7 +144,7 @@ function install_bspwm_sxhkd() {
   cd ..
 
   # 2. Instalamos sxhkd
-  if [ ! -d "sxhkd"]; then
+  if [ ! -d "sxhkd" ]; then
     git clone https://github.com/baskerville/sxhkd.git
   fi
 
@@ -215,6 +215,9 @@ function install_polybar(){
     # 3. Descargar y descomprimir
     wget "$polybar_url" -O polybar.tar.gz
     tar -xf polybar.tar.gz
+    
+    # Borramos el archivo comprimido para que el 'cd' no se confunda
+    rm polybar.tar.gz
     
     # El nombre de la carpeta cambia según la versión (ej: polybar-3.7.1), usamos comodín *
     cd polybar* # 4. Compilar (El método oficial de Polybar usa cmake)
