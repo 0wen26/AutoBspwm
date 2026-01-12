@@ -61,7 +61,7 @@ function install_dependencies() {
   #Instalamos las herramientas básicas de compilación y las librerias gráficas XCB
   # - build-essential: Trae el compilador 'gcc' y 'make'
   # - libxcb-*: Son las piezas de lego para manejar ventanas
-  apt install -y build-essential git vim xcb libxcb-util0-dev libxcb-ewmh-dev libxcb-randr0-dev libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xinerama0-dev libasound2-dev libxcb-xtest0-dev libxcb-shape0-dev
+  apt install -y build-essential git vim xcb cmake pkg-config libxcb-util0-dev libxcb-ewmh-dev libxcb-randr0-dev libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xinerama0-dev libasound2-dev libxcb-xtest0-dev libxcb-shape0-dev
 }
 
 # --- FUNCIÓN INSTALAR DOTFILES (CONFIGURACIÓN) ---
@@ -149,7 +149,7 @@ function install_bspwm_sxhkd() {
   cd /usr/local/src
 
   # 1. Instalamos bspwm
-  if [ ! -d "bspwm"]; then # Si la carpeta no existe, clonamos
+  if [ ! -d "bspwm" ]; then # Si la carpeta no existe, clonamos
     git clone https://github.com/baskerville/bspwm.git
   fi
 
@@ -213,30 +213,38 @@ function install_neovim() {
 
 }
 
-function install_polybar() {
-  echo -e "\n${purpleColour}[*] Instalando polybar ultima release...${endColour}\n"
+# --- FUNCIÓN INSTALAR POLYBAR (DESDE SOURCE RELEASE) ---
+function install_polybar(){
+    echo -e "\n${purpleColour}[*] Instalando Polybar (Última Release)...${endColour}\n"
 
-  #1. Instalar dependencias extra solo para polybar
-  # Sphinx es para la documentacion, libuv , etc.
+    # 1. Instalar dependencias extra SOLO para Polybar (son muchas, lo siento!)
+    # Sphinx es para la documentación, libuv, etc.
+    apt install -y libuv1-dev libcurl4-openssl-dev libxml2-dev ccache \
+    libxcb-xkb-dev libxcb-randr0-dev libxcb-ewmh-dev libxcb-icccm4-dev \
+    libxcb-cursor-dev libxcb-xrm-dev libxcb-shape0-dev python3-sphinx
 
-  apt install -y libuv1-dev libcurl4-openssl-dev libxml2-dev ccache libxcb-xkb-dev libxcb-randr0-dev libxcb-ewmh-dev libxcb-icccm4-dev libxcb-cursor-dev libxcb-xrm-dev libxcb-shape0-dev python3-sphinx
+    cd /usr/local/src
 
-  cd /usr/local/src/
+    # 2. Obtener la URL del código fuente (Source Code .tar.gz)
+    echo -e "   [i] Buscando la última versión..."
+    polybar_url=$(curl -s https://api.github.com/repos/polybar/polybar/releases/latest | grep "tarball_url" | cut -d '"' -f 4)
 
-  #2. obtener la url del codigo fuente
+    # 3. Descargar y descomprimir
+    wget "$polybar_url" -O polybar.tar.gz
+    tar -xf polybar.tar.gz
+    
+    # El nombre de la carpeta cambia según la versión (ej: polybar-3.7.1), usamos comodín *
+    cd polybar* # 4. Compilar (El método oficial de Polybar usa cmake)
+    mkdir build
+    cd build
+    cmake ..
+    make -j$(nproc)  # -j$(nproc) usa todos los núcleos de tu CPU para ir rápido
+    make install
 
-  # El nombre de la carpeta cambia segun la version usamos comodin *
-  cd polybar* # 4. compilar
-  mkdir build
-  cmake ..
-  make -j$(nproc)
-  make install
-
-  echo -e "${greenColour}[+] polybar instlada.${endColour}"
-
-  # Volvemos a casa
-  cd ~
-
+    echo -e "${greenColour}[+] Polybar instalado.${endColour}"
+    
+    # Volver a casa
+    cd ~
 }
 # ---- FUNCION INSTALAR PYCOM ---
 function install_picom() {
@@ -263,7 +271,7 @@ function install_picom() {
   ninja -C build
   ninja -C build install
 
-  echo -e "${$greenColour}[+] Picom instalado.${endColour}"
+  echo -e "${greenColour}[+] Picom instalado.${endColour}"
 }
 
 function install_tools(){
