@@ -172,7 +172,7 @@ function install_neovim() {
 
   # ENLACE DIRECTO A LA VERSIÓN STABLE
   echo -e "   [i] Descargando Neovim Stable..."
-  wget "https://github.com/neovim/neovim/releases/download/stable/nvim-linux64.tar.gz" -O nvim.tar.gz
+  wget "https://github.com/neovim/neovim/releases/download/v0.11.5/nvim-linux-x86_64.tar.gz" -O nvim.tar.gz
 
   # Descomprimir
   tar -xzf nvim.tar.gz
@@ -199,7 +199,7 @@ function install_kitty() {
 
   # ENLACE DIRECTO UNIVERSAL (Mucho más estable que la API)
   echo -e "   [i] Descargando la última versión..."
-  wget "https://github.com/kovidgoyal/kitty/releases/latest/download/kitty-linux-x86_64.txz" -O kitty.txz
+  wget "https://github.com/kovidgoyal/kitty/releases/download/v0.45.0/kitty-0.45.0-x86_64.txz" -O kitty.txz
 
   # Comprobamos si bajó bien
   if [ ! -s kitty.txz ]; then
