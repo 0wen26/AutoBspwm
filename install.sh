@@ -101,45 +101,90 @@ function install_dotfiles() {
 function install_zsh_omz() {
   echo -e "\n${blueColour}[*] Instalando ZSH, Oh My Zsh y Powerlevel10k...${endColour}"
 
-  # 1. Instalar Oh My Zsh
+  repo_conf_dir="$(dirname "$(readlink -f "$0")")/config"
+
+  # ---------------------------------------------------------
+  # A) INSTALACIÓN PARA EL USUARIO (OWEN)
+  # ---------------------------------------------------------
+  
+  # 1. Instalar Oh My Zsh (Usuario)
   if [ ! -d "$real_home/.oh-my-zsh" ]; then
-      echo -e "   [i] Descargando Oh My Zsh..."
+      echo -e "   [i] Instalando Oh My Zsh para $real_user..."
       su - "$real_user" -c 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended' > /dev/null 2>&1
   fi
 
-  # 2. Instalar Powerlevel10k (DIRECTAMENTE DONDE LO BUSCA TU CONFIG)
-  # Tu error dice que lo busca en /home/owen/powerlevel10k, así que lo ponemos ahí.
+  # 2. Instalar Powerlevel10k (DIRECTAMENTE EN ~/powerlevel10k)
+  # Usamos esta ruta porque es la que tienes definida en tu .zshrc
   p10k_dir="$real_home/powerlevel10k"
   
   if [ ! -d "$p10k_dir" ]; then
-      echo -e "   [i] Descargando Powerlevel10k en $p10k_dir..."
+      echo -e "   [i] Descargando P10k en $p10k_dir..."
       git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$p10k_dir" > /dev/null 2>&1
   fi
 
-  # 3. Plugins de ZSH
+  # 3. Plugins (Usuario)
   zsh_custom="$real_home/.oh-my-zsh/custom/plugins"
   git clone https://github.com/zsh-users/zsh-autosuggestions.git "$zsh_custom/zsh-autosuggestions" > /dev/null 2>&1
   git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$zsh_custom/zsh-syntax-highlighting" > /dev/null 2>&1
 
-  # 4. Enlazar tus archivos de configuración
-  repo_conf_dir="$(dirname "$(readlink -f "$0")")/config"
+  # 4. Enlazar Configuración (Usuario)
   if [ -f "$repo_conf_dir/zsh/.zshrc" ]; then
-      echo -e "   [i] Aplicando tu configuración personal..."
+      echo -e "   [i] Aplicando tu configuración personal (Usuario)..."
       ln -sf "$repo_conf_dir/zsh/.zshrc" "$real_home/.zshrc"
       ln -sf "$repo_conf_dir/zsh/.p10k.zsh" "$real_home/.p10k.zsh"
   else
-      # Fallback por si acaso
+      # Fallback básico
       sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="powerlevel10k\/powerlevel10k"/g' "$real_home/.zshrc"
   fi
 
-  # 5. Cambiar Shell
+  # ---------------------------------------------------------
+  # B) INSTALACIÓN PARA ROOT (MODO DIABLO 🔥)
+  # ---------------------------------------------------------
+  
+  echo -e "   [i] Configurando entorno para ROOT..."
+
+  # 1. Instalar Oh My Zsh para ROOT
+  if [ ! -d "/root/.oh-my-zsh" ]; then
+      git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git /root/.oh-my-zsh > /dev/null 2>&1
+  fi
+
+  # 2. Plugins para ROOT (Copiamos los del usuario)
+  mkdir -p /root/.oh-my-zsh/custom/plugins
+  cp -r "$zsh_custom/zsh-autosuggestions" /root/.oh-my-zsh/custom/plugins/ 2>/dev/null
+  cp -r "$zsh_custom/zsh-syntax-highlighting" /root/.oh-my-zsh/custom/plugins/ 2>/dev/null
+
+  # 3. Powerlevel10k para ROOT
+  # Copiamos la carpeta del usuario a /root/powerlevel10k para mantener la estructura
+  if [ ! -d "/root/powerlevel10k" ]; then
+      cp -r "$p10k_dir" "/root/powerlevel10k"
+  fi
+
+  # 4. Aplicar Archivos de Configuración ROOT (Desde config/root)
+  if [ -d "$repo_conf_dir/root" ]; then
+      echo -e "   [i] Copiando dotfiles de ROOT (.zshrc, .p10k.zsh, .bashrc)..."
+      
+      # Copiamos si existen
+      [ -f "$repo_conf_dir/root/.zshrc" ] && cp "$repo_conf_dir/root/.zshrc" "/root/.zshrc"
+      [ -f "$repo_conf_dir/root/.p10k.zsh" ] && cp "$repo_conf_dir/root/.p10k.zsh" "/root/.p10k.zsh"
+      [ -f "$repo_conf_dir/root/.bashrc" ] && cp "$repo_conf_dir/root/.bashrc" "/root/.bashrc"
+  else
+      echo -e "   [!] No encontré carpeta 'config/root'. Usando configuración básica."
+      cp "$real_home/.zshrc" "/root/.zshrc"
+      cp "$real_home/.p10k.zsh" "/root/.p10k.zsh"
+  fi
+
+  # ---------------------------------------------------------
+  # FINALIZACIÓN
+  # ---------------------------------------------------------
+
+  # Cambiar Shell por defecto
   chsh -s $(which zsh) "$real_user" > /dev/null 2>&1
   chsh -s $(which zsh) root > /dev/null 2>&1
   
-  # Permisos
+  # Arreglar permisos del usuario (Fundamental)
   chown -R "$real_user:$real_user" "$real_home/.oh-my-zsh" "$real_home/.zshrc" "$real_home/.p10k.zsh" "$p10k_dir"
 
-  echo -e "${greenColour}[+] ZSH configurado en ruta personalizada.${endColour}"
+  echo -e "${greenColour}[+] ZSH configurado para Usuario y Root.${endColour}"
 }
 
 # --- 4. FUENTES ---
