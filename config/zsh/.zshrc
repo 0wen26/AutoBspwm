@@ -22,27 +22,7 @@ alias l='lsd --group-dirs=first'
 alias lla='lsd -lha --group-dirs=first'
 alias ls='lsd --group-dirs=first'
 
-
-
-# ZSH Syntax Highlighting
-if [ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
-	source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-fi
-# ZSH AutoSuggestions Plugin
-if [ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
-	source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-fi
-
-# ZSH Autocomplete
-if [ -f /usr/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh  ]; then
-	source /usr/share/zsh-autocomplete/zsh-autocomplete.plugin.zsh
-fi
-
-# ZSH Sudo
-
-if [ -f /usr/share/zsh-sudo/sudo.plugin.zsh ]; then
-	source /usr/share/zsh-sudo/sudo.plugin.zsh
-fi 
+plugins=(git sudo zsh-autosuggestions zsh-syntax-highlighting)
 
 #history
 
@@ -86,7 +66,7 @@ function settarget(){
 }
 
 function cleartarget(){
-	echo '' > /home/s4vitar/.config/bin/target
+	echo '' > /home/owen/.config/bin/target
 }
 
 
