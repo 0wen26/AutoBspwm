@@ -100,35 +100,45 @@ function install_dotfiles() {
 function install_zsh_omz() {
   echo -e "\n${blueColour}[*] Instalando ZSH, Oh My Zsh y Powerlevel10k...${endColour}"
 
+  # 1. Instalar Oh My Zsh
   if [ ! -d "$real_home/.oh-my-zsh" ]; then
       echo -e "   [i] Descargando Oh My Zsh..."
-      # Redirigimos la salida del script de instalación
       su - "$real_user" -c 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended' > /dev/null 2>&1
   fi
 
-  p10k_dir="$real_home/.oh-my-zsh/custom/themes/powerlevel10k"
+  # 2. Instalar Powerlevel10k (DIRECTAMENTE DONDE LO BUSCA TU CONFIG)
+  # Tu error dice que lo busca en /home/owen/powerlevel10k, así que lo ponemos ahí.
+  p10k_dir="$real_home/powerlevel10k"
+  
   if [ ! -d "$p10k_dir" ]; then
-      echo -e "   [i] Instalando tema Powerlevel10k..."
+      echo -e "   [i] Descargando Powerlevel10k en $p10k_dir..."
       git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$p10k_dir" > /dev/null 2>&1
   fi
 
+  # 3. Plugins de ZSH
   zsh_custom="$real_home/.oh-my-zsh/custom/plugins"
   git clone https://github.com/zsh-users/zsh-autosuggestions.git "$zsh_custom/zsh-autosuggestions" > /dev/null 2>&1
   git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$zsh_custom/zsh-syntax-highlighting" > /dev/null 2>&1
 
+  # 4. Enlazar tus archivos de configuración
   repo_conf_dir="$(dirname "$(readlink -f "$0")")/config"
   if [ -f "$repo_conf_dir/zsh/.zshrc" ]; then
+      echo -e "   [i] Aplicando tu configuración personal..."
       ln -sf "$repo_conf_dir/zsh/.zshrc" "$real_home/.zshrc"
       ln -sf "$repo_conf_dir/zsh/.p10k.zsh" "$real_home/.p10k.zsh"
   else
+      # Fallback por si acaso
       sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="powerlevel10k\/powerlevel10k"/g' "$real_home/.zshrc"
   fi
 
+  # 5. Cambiar Shell
   chsh -s $(which zsh) "$real_user" > /dev/null 2>&1
   chsh -s $(which zsh) root > /dev/null 2>&1
+  
+  # Permisos
   chown -R "$real_user:$real_user" "$real_home/.oh-my-zsh" "$real_home/.zshrc" "$real_home/.p10k.zsh" "$p10k_dir"
 
-  echo -e "${greenColour}[+] ZSH configurado.${endColour}"
+  echo -e "${greenColour}[+] ZSH configurado en ruta personalizada.${endColour}"
 }
 
 # --- 4. FUENTES ---
