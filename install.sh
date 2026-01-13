@@ -48,25 +48,23 @@ function install_dependencies() {
   echo -e "\n${yellowColour}[*] Comprobando distribución y dependencias... ${endColour}\n"
   
   if grep -iq "Parrot" /etc/os-release; then
-    echo -e "   [i] Distribución detectada: ${purpleColour}Parrot OS${endColour}"
     apt update
   else
-    echo -e "   [i] Distribución detectada: ${blueColour}Linux Genérico${endColour}"
     apt update
   fi
 
-  echo -e "   [i] Instalando TODAS las herramientas y librerías necesarias..."
+  echo -e "   [i] Instalando TODAS las librerías XCB necesarias..."
   
-  # AQUI ESTÁ LA ACTUALIZACIÓN:
-  # - Agregado: xcb-proto python3-xcbgen (Vitales para Polybar/XPP)
-  # - Agregado: libcairo2-dev (Vital para gráficos)
-  # - Agregado: libxcb-xkb-dev (Vital para sxhkd)
+  # LISTA DEFINITIVA DE DEPENDENCIAS:
+  # - Añadido: libxcb-image0-dev (Soluciona tu error actual XCB_IMAGE_FOUND)
+  # - Añadido: libxcb-cursor-dev (Soluciona el siguiente error común)
   
   apt install -y build-essential git vim xcb cmake pkg-config \
   libxcb-util0-dev libxcb-ewmh-dev libxcb-randr0-dev \
   libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xinerama0-dev \
   libasound2-dev libxcb-xtest0-dev libxcb-shape0-dev \
   libxcb-xkb-dev libcairo2-dev libx11-xcb-dev libxcb-composite0-dev \
+  libxcb-image0-dev libxcb-cursor-dev \
   xcb-proto python3-xcbgen
 }
 
