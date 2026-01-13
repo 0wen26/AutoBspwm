@@ -41,7 +41,8 @@ function install_dependencies() {
   libxcb-xkb-dev libcairo2-dev libx11-xcb-dev libxcb-composite0-dev \
   libxcb-image0-dev libxcb-cursor-dev xcb-proto python3-xcbgen \
   rofi feh fzf curl wget unzip zsh \
-  dunst libnotify-bin flameshot scrot lxappearance papirus-icon-theme > /dev/null 2>&1
+  dunst libnotify-bin flameshot scrot lxappearance papirus-icon-theme \
+  ripgrep fd-find npm python3-venv > /dev/null 2>&1
 }
 
 # --- 2. CONFIGURACIÓN (DOTFILES) ---
@@ -245,11 +246,13 @@ function install_kitty() {
 }
 
 # --- 9. NEOVIM ---
+# --- 9. NEOVIM + LAZYVIM ---
 function install_neovim() {
-  echo -e "\n${blueColour}[*] Instalando Neovim (Stable)...${endColour}"
+  echo -e "\n${blueColour}[*] Instalando Neovim y LazyVim...${endColour}"
   cd /opt
+  
+  # 1. Instalar binario (Silencioso)
   wget -q "https://github.com/neovim/neovim/releases/download/v0.11.5/nvim-linux-x86_64.tar.gz" -O nvim.tar.gz
-
   rm -rf nvim
   tar -xzf nvim.tar.gz > /dev/null 2>&1
   
@@ -257,10 +260,30 @@ function install_neovim() {
   if [ -n "$extracted_dir" ]; then
       mv "$extracted_dir" nvim
   fi
-
   rm nvim.tar.gz
   ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim
-  echo -e "${greenColour}[+] Neovim instalado.${endColour}"
+
+  # 2. Configurar LazyVim (Si no tienes config propia)
+  # Primero miramos si install_dotfiles ya puso algo en ~/.config/nvim
+  nvim_config_dir="$real_home/.config/nvim"
+  
+  if [ -d "$nvim_config_dir" ] && [ "$(ls -A $nvim_config_dir)" ]; then
+      echo -e "   [i] Detectada configuración propia de Neovim."
+  else
+      echo -e "   [i] No hay configuración detectada. Clonando LazyVim Starter..."
+      # Hacemos backup por seguridad
+      rm -rf "$nvim_config_dir" "$real_home/.local/share/nvim"
+      
+      # Clonamos el starter oficial
+      git clone https://github.com/LazyVim/starter "$nvim_config_dir" > /dev/null 2>&1
+      
+      # Borramos la carpeta .git para que sea TU configuración, no un repo de ellos
+      rm -rf "$nvim_config_dir/.git"
+      
+      chown -R "$real_user:$real_user" "$nvim_config_dir"
+  fi
+
+  echo -e "${greenColour}[+] Neovim + LazyVim instalados.${endColour}"
 }
 
 # --- 10. TOOLS EXTRA ---
