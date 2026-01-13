@@ -261,6 +261,7 @@ install_bspwm_sxhkd
 install_polybar
 install_picom
 install_kitty
+install_neovim
 install_tools
 install_wallpaper
 
