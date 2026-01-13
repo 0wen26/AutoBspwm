@@ -349,7 +349,7 @@ function install_tools(){
 function install_wallpaper() {
   echo -e "\n${blueColour}[*] Configurando Wallpaper...${endColour}"
   repo_wall_dir="$(dirname "$(readlink -f "$0")")/wallpapers"
-  user_wall_dir="$real_home/Wallpapers"
+  user_wall_dir="$real_home/wallpapers"
   
   mkdir -p "$user_wall_dir"
   
