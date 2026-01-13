@@ -246,25 +246,34 @@ function install_kitty() {
 }
 
 function install_feh_wallpaper() {
-  echo -e "\n${blueColour}[*] Instalando Feh y configurando Wallpaper...${endColour}\n"
+  echo -e "\n${blueColour}[*] Instalando Feh y configurando TU Wallpaper personalizado...${endColour}\n"
 
   # 1. Instalar feh
   apt install -y feh
 
-  # 2. Crear carpeta de Wallpapers para el usuario
-  wallpapers_dir="/home/$SUDO_USER/Wallpapers"
-  mkdir -p "$wallpapers_dir"
+  # 2. Definir rutas
+  # Origen: La carpeta 'wallpapers' que acabas de crear en el repo
+  wallpapers_src="$(dirname "$0")/wallpapers"
+  # Destino: La carpeta de imágenes del usuario
+  wallpapers_dest="/home/$SUDO_USER/Wallpapers"
 
-  # 3. Descargar un fondo chulo (Cyberpunk/Hacking style)
-  echo -e "   [i] Descargando wallpaper de demostración..."
-  # Usamos una URL directa a una imagen (puedes cambiarla por la que quieras)
-  wallpaper_url="https://images4.alphacoders.com/936/936378.jpg"
-  wget -q "$wallpaper_url" -O "$wallpapers_dir/wallpaper.jpg"
+  # 3. Crear directorio destino
+  mkdir -p "$wallpapers_dest"
 
-  # Ajustamos permisos porque lo hemos descargado como root (sudo)
-  chown -R "$SUDO_USER:$SUDO_USER" "$wallpapers_dir"
+  # 4. Copiar tu foto
+  if [ -d "$wallpapers_src" ]; then
+      echo -e "   [i] Copiando tu 'wallpaper.jpg' desde el repositorio..."
+      cp -r "$wallpapers_src"/* "$wallpapers_dest/"
+      
+      # Arreglar permisos (importante porque ejecutamos como sudo)
+      chown -R "$SUDO_USER:$SUDO_USER" "$wallpapers_dest"
+  else
+      echo -e "${redColour}[!] Error: No encontré la carpeta 'wallpapers' en el repositorio.${endColour}"
+      # Si falla, descargamos uno de emergencia para que no quede negro
+      wget -q "https://images4.alphacoders.com/936/936378.jpg" -O "$wallpapers_dest/wallpaper.jpg"
+  fi
 
-  echo -e "${greenColour}[+] Feh instalado y Wallpaper configurado.${endColour}"
+  echo -e "${greenColour}[+] Wallpaper personalizado configurado.${endColour}"
 }
 # --- FUNCIÓN INSTALAR POLYBAR (DESDE SOURCE RELEASE) ---
 function install_polybar() {
