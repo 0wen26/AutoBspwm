@@ -348,17 +348,20 @@ function install_tools(){
 # --- 11. WALLPAPER ---
 function install_wallpaper() {
   echo -e "\n${blueColour}[*] Configurando Wallpaper...${endColour}"
-  repo_wall_dir="$(dirname "$(readlink -f "$0")")/wallpapers"
-  user_wall_dir="$real_home/wallpapers"
   
-  mkdir -p "$user_wall_dir"
+  # --- BLOQUE DE DEPURACIÓN ---
+  echo "   [DEBUG] 1. Estoy ejecutándome en: $(pwd)"
+  echo "   [DEBUG] 2. El script se llama: $0"
+  
+  repo_wall_dir="$(dirname "$(readlink -f "$0")")/wallpapers"
+  
+  echo "   [DEBUG] 3. He calculado que la carpeta debería estar en:"
+  echo "   --> $repo_wall_dir <--"
   
   if [ -d "$repo_wall_dir" ]; then
-      cp -r "$repo_wall_dir"/* "$user_wall_dir/"
-      chown -R "$real_user:$real_user" "$user_wall_dir"
-      echo -e "   [i] Wallpapers copiados del repositorio."
+      echo "   [DEBUG] 4. ¡SÍ! Encuentro la carpeta."
   else
-      wget -q "https://images4.alphacoders.com/936/936378.jpg" -O "$user_wall_dir/wallpaper.jpg"
+      echo "   [DEBUG] 4. ¡NO! No veo la carpeta. (Por eso me voy al else)"
   fi
 }
 
