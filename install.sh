@@ -166,81 +166,65 @@ function install_bspwm_sxhkd() {
 # --- FUNCIÓN INSTALAR NEOVIM (LATEST RELEASE) ---
 #
 function install_neovim() {
-  echo -e "\n${blueColour}[*] Instalando la última versión estable de Neovim...${endColour}\n"
+  echo -e "\n${blueColour}[*] Instalando Neovim (Versión Stable)...${endColour}\n"
 
   cd /usr/local/src
 
-  # TRUCO DE EXPERTO
-  # Usamos curl para ver la info de la última release.
-  # Usamos grep para buscar la línea que tiene el archivo para linux de 64 bits
-  # Limpiamos la URL con cut y tr
+  # ENLACE DIRECTO A LA VERSIÓN STABLE
+  echo -e "   [i] Descargando Neovim Stable..."
+  wget "https://github.com/neovim/neovim/releases/download/stable/nvim-linux64.tar.gz" -O nvim.tar.gz
 
-  wget_url=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | grep "browser_download_url.*nvim-linux-x86_64.tar.gz" | cut -d : -f 2,3 | tr -d \" | head -n 1)
+  # Descomprimir
+  tar -xzf nvim.tar.gz
 
-  echo -e "   [i] Descargando desde: $wget_url"
-
-  # Descargamos el archivo
-  wget "$wget_url" -O nvim-linux-x86_64.tar.gz
-
-  # Descomprimimos
-  tar -xzf nvim-linux-x86_64.tar.gz
-
-  # Instalamos ( movemos la carpeta y creamos el enlace simbolico)
-  # Borramos si existia una version anterior para no mezclar
+  # Limpieza de versión anterior
   rm -rf /opt/nvim
-  mv nvim-linux-x86_64 /opt/nvim
 
-  # Creamos el acceso directo para que al escribir 'nvim' funcione
+  # IMPORTANTE: El tar.gz de la versión stable se llama 'nvim-linux64' al descomprimirse
+  mv nvim-linux64 /opt/nvim
+
+  # Enlace simbólico
   ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim
 
   # Limpieza
-  rm nvim-linux-x86_64.tar.gz
+  rm nvim.tar.gz
 
   echo -e "${greenColour}[+] Neovim instalado correctamente.${endColour}"
-
 }
 
 function install_kitty() {
-  echo -e "\n${blueColour}[*] Instalando Kitty Terminal (Última versión de GitHub)...${endColour}\n"
+  echo -e "\n${blueColour}[*] Instalando Kitty Terminal (Método directo)...${endColour}\n"
 
   cd /usr/local/src
 
-  # 1. Obtener la URL de descarga (Linux x86_64 .txz)
-  # Usamos la API de GitHub para asegurar que siempre sea la última versión
-  echo -e "   [i] Buscando la última release en GitHub..."
-  kitty_url=$(curl -s https://api.github.com/repos/kovidgoyal/kitty/releases/latest | grep "browser_download_url.*linux-x86_64.txz" | cut -d : -f 2,3 | tr -d \" | head -n 1)
+  # ENLACE DIRECTO UNIVERSAL (Mucho más estable que la API)
+  echo -e "   [i] Descargando la última versión..."
+  wget "https://github.com/kovidgoyal/kitty/releases/latest/download/kitty-linux-x86_64.txz" -O kitty.txz
 
-  echo -e "   [i] Descargando: $kitty_url"
-  wget "$kitty_url" -O kitty.txz
+  # Comprobamos si bajó bien
+  if [ ! -s kitty.txz ]; then
+      echo -e "${redColour}[!] Error: La descarga falló.${endColour}"
+      return 1
+  fi
 
-  # 2. Limpieza previa por si ya existía
+  # Limpieza previa
   rm -rf /opt/kitty
 
-  # 3. Crear directorio y descomprimir
+  # Instalación
   mkdir -p /opt/kitty
-  # -C /opt/kitty le dice a tar que extraiga los archivos DENTRO de esa carpeta
   tar -xf kitty.txz -C /opt/kitty
 
-  # 4. Crear enlaces simbólicos (Symlinks)
-  # Esto hace que puedas escribir 'kitty' en cualquier terminal y funcione
+  # Enlaces simbólicos
   ln -sf /opt/kitty/bin/kitty /usr/local/bin/kitty
-  ln -sf /opt/kitty/bin/kitten /usr/local/bin/kitten # 'kitten' es una herramienta auxiliar de kitty
+  ln -sf /opt/kitty/bin/kitten /usr/local/bin/kitten
 
-  # 5. Integración con el escritorio (Iconos y Menús)
-  # Copiamos el archivo .desktop para que aparezca en rofi/dmenu
+  # Integración escritorio
   cp /opt/kitty/share/applications/kitty.desktop /usr/share/applications/
-  
-  # Ajustamos las rutas del icono y el ejecutable en el archivo .desktop para asegurar que apunten a /opt
   sed -i 's|Icon=kitty|Icon=/opt/kitty/share/icons/hicolor/256x256/apps/kitty.png|g' /usr/share/applications/kitty.desktop
   sed -i 's|Exec=kitty|Exec=/opt/kitty/bin/kitty|g' /usr/share/applications/kitty.desktop
 
-  # 6. AUTO-FIX: Actualizar sxhkdrc para usar kitty
-  # Esto busca si tienes 'alacritty', 'urxvt' o 'gnome-terminal' en tu config y lo cambia por 'kitty'
-  
-  # Limpieza del archivo descargado
   rm kitty.txz
-
-  echo -e "${greenColour}[+] Kitty instalada correctamente en /opt/kitty.${endColour}"
+  echo -e "${greenColour}[+] Kitty instalada correctamente.${endColour}"
 }
 
 function install_feh_wallpaper() {
