@@ -25,7 +25,7 @@ fi
 
 real_user="$SUDO_USER"
 real_home="/home/$real_user"
-
+script_dir="$(dirname "$(readlink -f "$0")")"
 # --- 1. DEPENDENCIAS ---
 function install_dependencies() {
   echo -e "\n${yellowColour}[*] Actualizando sistema e instalando dependencias (esto tardará un poco)... ${endColour}"
@@ -349,19 +349,27 @@ function install_tools(){
 function install_wallpaper() {
   echo -e "\n${blueColour}[*] Configurando Wallpaper...${endColour}"
   
-  # --- BLOQUE DE DEPURACIÓN ---
-  echo "   [DEBUG] 1. Estoy ejecutándome en: $(pwd)"
-  echo "   [DEBUG] 2. El script se llama: $0"
+  # Usamos la variable segura que definimos al principio
+  repo_wall_dir="$script_dir/wallpapers"
+  user_wall_dir="$real_home/wallpapers"
   
-  repo_wall_dir="$(dirname "$(readlink -f "$0")")/wallpapers"
+  echo "   [i] Buscando wallpapers en: $repo_wall_dir"
   
-  echo "   [DEBUG] 3. He calculado que la carpeta debería estar en:"
-  echo "   --> $repo_wall_dir <--"
+  mkdir -p "$user_wall_dir"
   
   if [ -d "$repo_wall_dir" ]; then
-      echo "   [DEBUG] 4. ¡SÍ! Encuentro la carpeta."
+      cp -r "$repo_wall_dir"/* "$user_wall_dir/"
+      chown -R "$real_user:$real_user" "$user_wall_dir"
+      echo -e "   [i] Wallpapers copiados del repositorio."
   else
-      echo "   [DEBUG] 4. ¡NO! No veo la carpeta. (Por eso me voy al else)"
+      echo -e "   [!] No encontré la carpeta local. Descargando de internet..."
+      wget -q "https://images4.alphacoders.com/936/936378.jpg" -O "$user_wall_dir/wallpaper.jpg"
+  fi
+  
+  # Aplicar fondo inmediatamente (para comprobar que funciona)
+  first_wall=$(find "$user_wall_dir" -type f \( -name "*.jpg" -o -name "*.png" \) | head -n 1)
+  if [ -n "$first_wall" ]; then
+      su - "$real_user" -c "DISPLAY=:0 feh --bg-fill '$first_wall'" > /dev/null 2>&1
   fi
 }
 
