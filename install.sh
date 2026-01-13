@@ -45,23 +45,29 @@ fi
 # --- FUNCIÓN DE DEPENDENCIAS ---
 #
 function install_dependencies() {
-    echo -e "\n${yellowColour}[*] Comprobando distribución y dependencias... ${endColour}\n"
-    
-    if grep -iq "Parrot" /etc/os-release; then
-        apt update
-    else
-        apt update
-    fi
+  echo -e "\n${yellowColour}[*] Comprobando distribución y dependencias... ${endColour}\n"
+  
+  if grep -iq "Parrot" /etc/os-release; then
+    echo -e "   [i] Distribución detectada: ${purpleColour}Parrot OS${endColour}"
+    apt update
+  else
+    echo -e "   [i] Distribución detectada: ${blueColour}Linux Genérico${endColour}"
+    apt update
+  fi
 
-    echo -e "   [i] Instalando TODAS las dependencias necesarias..."
-    
-    # HE AÑADIDO: libxcb-xkb-dev (VITAL para sxhkd) y libcairo2-dev (VITAL para polybar)
-    apt install -y build-essential git vim xcb cmake pkg-config \
-    libxcb-util0-dev libxcb-ewmh-dev libxcb-randr0-dev \
-    libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xinerama0-dev \
-    libasound2-dev libxcb-xtest0-dev libxcb-shape0-dev \
-    libxcb-xkb-dev libcairo2-dev libx11-xcb-dev libxcb-composite0-dev \
-    xcb-proto python3-xcbgen
+  echo -e "   [i] Instalando TODAS las herramientas y librerías necesarias..."
+  
+  # AQUI ESTÁ LA ACTUALIZACIÓN:
+  # - Agregado: xcb-proto python3-xcbgen (Vitales para Polybar/XPP)
+  # - Agregado: libcairo2-dev (Vital para gráficos)
+  # - Agregado: libxcb-xkb-dev (Vital para sxhkd)
+  
+  apt install -y build-essential git vim xcb cmake pkg-config \
+  libxcb-util0-dev libxcb-ewmh-dev libxcb-randr0-dev \
+  libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xinerama0-dev \
+  libasound2-dev libxcb-xtest0-dev libxcb-shape0-dev \
+  libxcb-xkb-dev libcairo2-dev libx11-xcb-dev libxcb-composite0-dev \
+  xcb-proto python3-xcbgen
 }
 
 # --- FUNCIÓN INSTALAR DOTFILES (CONFIGURACIÓN) ---
@@ -196,33 +202,100 @@ function install_neovim() {
 
 }
 
+function install_kitty() {
+  echo -e "\n${blueColour}[*] Instalando Kitty Terminal (Última versión de GitHub)...${endColour}\n"
+
+  cd /usr/local/src
+
+  # 1. Obtener la URL de descarga (Linux x86_64 .txz)
+  # Usamos la API de GitHub para asegurar que siempre sea la última versión
+  echo -e "   [i] Buscando la última release en GitHub..."
+  kitty_url=$(curl -s https://api.github.com/repos/kovidgoyal/kitty/releases/latest | grep "browser_download_url.*linux-x86_64.txz" | cut -d : -f 2,3 | tr -d \" | head -n 1)
+
+  echo -e "   [i] Descargando: $kitty_url"
+  wget "$kitty_url" -O kitty.txz
+
+  # 2. Limpieza previa por si ya existía
+  rm -rf /opt/kitty
+
+  # 3. Crear directorio y descomprimir
+  mkdir -p /opt/kitty
+  # -C /opt/kitty le dice a tar que extraiga los archivos DENTRO de esa carpeta
+  tar -xf kitty.txz -C /opt/kitty
+
+  # 4. Crear enlaces simbólicos (Symlinks)
+  # Esto hace que puedas escribir 'kitty' en cualquier terminal y funcione
+  ln -sf /opt/kitty/bin/kitty /usr/local/bin/kitty
+  ln -sf /opt/kitty/bin/kitten /usr/local/bin/kitten # 'kitten' es una herramienta auxiliar de kitty
+
+  # 5. Integración con el escritorio (Iconos y Menús)
+  # Copiamos el archivo .desktop para que aparezca en rofi/dmenu
+  cp /opt/kitty/share/applications/kitty.desktop /usr/share/applications/
+  
+  # Ajustamos las rutas del icono y el ejecutable en el archivo .desktop para asegurar que apunten a /opt
+  sed -i 's|Icon=kitty|Icon=/opt/kitty/share/icons/hicolor/256x256/apps/kitty.png|g' /usr/share/applications/kitty.desktop
+  sed -i 's|Exec=kitty|Exec=/opt/kitty/bin/kitty|g' /usr/share/applications/kitty.desktop
+
+  # 6. AUTO-FIX: Actualizar sxhkdrc para usar kitty
+  # Esto busca si tienes 'alacritty', 'urxvt' o 'gnome-terminal' en tu config y lo cambia por 'kitty'
+  
+  # Limpieza del archivo descargado
+  rm kitty.txz
+
+  echo -e "${greenColour}[+] Kitty instalada correctamente en /opt/kitty.${endColour}"
+}
+
+function install_feh_wallpaper() {
+  echo -e "\n${blueColour}[*] Instalando Feh y configurando Wallpaper...${endColour}\n"
+
+  # 1. Instalar feh
+  apt install -y feh
+
+  # 2. Crear carpeta de Wallpapers para el usuario
+  wallpapers_dir="/home/$SUDO_USER/Wallpapers"
+  mkdir -p "$wallpapers_dir"
+
+  # 3. Descargar un fondo chulo (Cyberpunk/Hacking style)
+  echo -e "   [i] Descargando wallpaper de demostración..."
+  # Usamos una URL directa a una imagen (puedes cambiarla por la que quieras)
+  wallpaper_url="https://images4.alphacoders.com/936/936378.jpg"
+  wget -q "$wallpaper_url" -O "$wallpapers_dir/wallpaper.jpg"
+
+  # Ajustamos permisos porque lo hemos descargado como root (sudo)
+  chown -R "$SUDO_USER:$SUDO_USER" "$wallpapers_dir"
+
+  echo -e "${greenColour}[+] Feh instalado y Wallpaper configurado.${endColour}"
+}
 # --- FUNCIÓN INSTALAR POLYBAR (DESDE SOURCE RELEASE) ---
-function install_polybar(){
-    echo -e "\n${purpleColour}[*] Instalando Polybar (Git method)...${endColour}\n"
+function install_polybar() {
+  echo -e "\n${purpleColour}[*] Instalando Polybar (Git method)...${endColour}\n"
 
-    # Dependencias extra para polybar (python-sphinx opcional, lo quitamos para evitar líos)
-    apt install -y libuv1-dev libxml2-dev 2>/dev/null
+  # Dependencias extra de seguridad
+  apt install -y libuv1-dev libxml2-dev 2>/dev/null
 
-    cd /usr/local/src
+  cd /usr/local/src/
 
-    # Limpieza
-    rm -rf polybar* # CLONADO RECURSIVO (Soluciona el error de xpp/cmake)
-    if [ ! -d "polybar" ]; then
-        git clone --recursive https://github.com/polybar/polybar.git
-    fi
+  # Limpieza por si quedaron residuos
+  rm -rf polybar* # CLONADO RECURSIVO: Esto descarga xpp y usa xcb-proto correctamente
+  if [ ! -d "polybar" ]; then
+    echo -e "   [i] Clonando repositorio (Recursive)..."
+    git clone --recursive https://github.com/polybar/polybar.git
+  fi
 
-    cd polybar
-    mkdir build
-    cd build
-    
-    # Desactivamos docs y curl para máxima compatibilidad
-    cmake .. -DBUILD_DOC=OFF -DENABLE_CURL=OFF
-    
-    make -j$(nproc)
-    make install
+  cd polybar
+  mkdir build
+  cd build
+  
+  # Compilación optimizada sin docs ni curl para evitar errores de red
+  cmake .. -DBUILD_DOC=OFF -DENABLE_CURL=OFF
+  
+  make -j$(nproc)
+  make install
 
-    echo -e "${greenColour}[+] Polybar instalado.${endColour}"
-    cd ~
+  echo -e "${greenColour}[+] Polybar instalada.${endColour}"
+
+  # Volvemos a casa
+  cd ~
 }
 
 
@@ -288,3 +361,6 @@ install_fonts
 install_bspwm_sxhkd
 install_polybar
 install_picom
+install_feh_wallpaper
+install_kitty
+install_neovim
