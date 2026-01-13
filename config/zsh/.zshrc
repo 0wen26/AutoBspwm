@@ -62,7 +62,7 @@ export PATH=/opt/kitty/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/ga
 function settarget(){
     ip_address=$1
     machine_name=$2
-    echo "$ip_address $machine_name" > /home/s4vitar/.config/bin/target
+    echo "$ip_address $machine_name" > /home/owen/.config/bin/target
 }
 
 function cleartarget(){
