@@ -40,7 +40,7 @@ function install_dependencies() {
   rofi feh fzf curl wget unzip zsh xorg xinit \
   dunst libnotify-bin flameshot scrot lxappearance papirus-icon-theme \
   ripgrep fd-find npm python3-venv 
-  mkdir -p /home/owen/.config
+  mkdir -p "$real_home/.config"
 }
 
 # --- 2. CONFIGURACIÓN (DOTFILES) ---
