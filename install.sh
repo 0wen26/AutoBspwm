@@ -34,7 +34,7 @@ function install_dependencies() {
 
   echo -e "   [i] Instalando librerías gráficas y de compilación..."
   # He añadido las librerías EWMH, KEYSYMS y XINERAMA que te faltaban
-  apt install -y build-essential git vim xcb cmake pkg-config \
+  apt install -y build-essential git vim cmake pkg-config \
   libxcb-util0-dev libxcb-ewmh-dev libxcb-randr0-dev \
   libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xinerama0-dev \
   libasound2-dev libxcb-xtest0-dev libxcb-shape0-dev \
