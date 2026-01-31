@@ -28,22 +28,23 @@ real_home="/home/$real_user"
 script_dir="$(dirname "$(readlink -f "$0")")"
 # --- 1. DEPENDENCIAS ---
 function install_dependencies() {
-  echo -e "\n${yellowColour}[*] Actualizando sistema e instalando dependencias (esto tardará un poco)... ${endColour}"
+  echo -e "\n${yellowColour}[*] Actualizando sistema e instalando dependencias... ${endColour}"
   
-  # Redirigimos a /dev/null para que no moleste
   apt update
 
   echo -e "   [i] Instalando librerías gráficas y de compilación..."
+  # He añadido las librerías EWMH, KEYSYMS y XINERAMA que te faltaban
   apt install -y build-essential git vim xcb cmake pkg-config \
   libxcb-util0-dev libxcb-ewmh-dev libxcb-randr0-dev \
   libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xinerama0-dev \
   libasound2-dev libxcb-xtest0-dev libxcb-shape0-dev \
   libxcb-xkb-dev libcairo2-dev libx11-xcb-dev libxcb-composite0-dev \
   libxcb-image0-dev libxcb-cursor-dev xcb-proto python3-xcbgen \
-  rofi feh fzf curl wget unzip zsh \
+  rofi feh fzf curl wget unzip zsh xorg xinit \
   dunst libnotify-bin flameshot scrot lxappearance papirus-icon-theme \
-  xorg xinit \
   ripgrep fd-find npm python3-venv 
+  
+  mkdir -p /home/owen/.config
 }
 
 # --- 2. CONFIGURACIÓN (DOTFILES) ---
@@ -228,6 +229,7 @@ function install_bspwm_sxhkd() {
 
   cd ~
   echo -e "${greenColour}[+] BSPWM y SXHKD listos.${endColour}"
+  sudo ldconfig
 }
 
 # --- 6. POLYBAR ---
