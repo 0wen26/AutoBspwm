@@ -31,7 +31,7 @@ function install_dependencies() {
   echo -e "\n${yellowColour}[*] Actualizando sistema e instalando dependencias (esto tardará un poco)... ${endColour}"
   
   # Redirigimos a /dev/null para que no moleste
-  apt update > /dev/null 2>&1
+  apt update
 
   echo -e "   [i] Instalando librerías gráficas y de compilación..."
   apt install -y build-essential git vim xcb cmake pkg-config \
@@ -43,7 +43,7 @@ function install_dependencies() {
   rofi feh fzf curl wget unzip zsh \
   dunst libnotify-bin flameshot scrot lxappearance papirus-icon-theme \
   xorg xinit \
-  ripgrep fd-find npm python3-venv > /dev/null 2>&1
+  ripgrep fd-find npm python3-venv > 
 }
 
 # --- 2. CONFIGURACIÓN (DOTFILES) ---
@@ -87,7 +87,7 @@ function install_dotfiles() {
   # --- FIX POLYBAR ---
   echo -e "   [i] Aplicando parches automáticos a Polybar..."
   mkdir -p "$real_home/.config/bin"
-  touch "$real_home/.config/bin/target" 2>/dev/null
+  touch "$real_home/.config/bin/target"
 
   default_iface=$(ip route | grep '^default' | awk '{print $5}' | head -n1)
   if [ -n "$default_iface" ]; then
@@ -111,7 +111,7 @@ function install_zsh_omz() {
   # 1. Instalar Oh My Zsh (Usuario)
   if [ ! -d "$real_home/.oh-my-zsh" ]; then
       echo -e "   [i] Instalando Oh My Zsh para $real_user..."
-      su - "$real_user" -c 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended' > /dev/null 2>&1
+      su - "$real_user" -c 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended'
   fi
 
   # 2. Instalar Powerlevel10k (DIRECTAMENTE EN ~/powerlevel10k)
@@ -120,13 +120,13 @@ function install_zsh_omz() {
   
   if [ ! -d "$p10k_dir" ]; then
       echo -e "   [i] Descargando P10k en $p10k_dir..."
-      git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$p10k_dir" > /dev/null 2>&1
+      git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$p10k_dir" 
   fi
 
   # 3. Plugins (Usuario)
   zsh_custom="$real_home/.oh-my-zsh/custom/plugins"
-  git clone https://github.com/zsh-users/zsh-autosuggestions.git "$zsh_custom/zsh-autosuggestions" > /dev/null 2>&1
-  git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$zsh_custom/zsh-syntax-highlighting" > /dev/null 2>&1
+  git clone https://github.com/zsh-users/zsh-autosuggestions.git "$zsh_custom/zsh-autosuggestions" 
+  git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$zsh_custom/zsh-syntax-highlighting" 
 
   # 4. Enlazar Configuración (Usuario)
   if [ -f "$repo_conf_dir/zsh/.zshrc" ]; then
@@ -146,13 +146,13 @@ function install_zsh_omz() {
 
   # 1. Instalar Oh My Zsh para ROOT
   if [ ! -d "/root/.oh-my-zsh" ]; then
-      git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git /root/.oh-my-zsh > /dev/null 2>&1
+      git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git /root/.oh-my-zsh 
   fi
 
   # 2. Plugins para ROOT (Copiamos los del usuario)
   mkdir -p /root/.oh-my-zsh/custom/plugins
-  cp -r "$zsh_custom/zsh-autosuggestions" /root/.oh-my-zsh/custom/plugins/ 2>/dev/null
-  cp -r "$zsh_custom/zsh-syntax-highlighting" /root/.oh-my-zsh/custom/plugins/ 2>/dev/null
+  cp -r "$zsh_custom/zsh-autosuggestions" /root/.oh-my-zsh/custom/plugins/ 
+  cp -r "$zsh_custom/zsh-syntax-highlighting" /root/.oh-my-zsh/custom/plugins/
 
   # 3. Powerlevel10k para ROOT
   # Copiamos la carpeta del usuario a /root/powerlevel10k para mantener la estructura
@@ -179,8 +179,8 @@ function install_zsh_omz() {
   # ---------------------------------------------------------
 
   # Cambiar Shell por defecto
-  chsh -s $(which zsh) "$real_user" > /dev/null 2>&1
-  chsh -s $(which zsh) root > /dev/null 2>&1
+  chsh -s $(which zsh) "$real_user" 
+  chsh -s $(which zsh) root 
   
   # Arreglar permisos del usuario (Fundamental)
   chown -R "$real_user:$real_user" "$real_home/.oh-my-zsh" "$real_home/.zshrc" "$real_home/.p10k.zsh" "$p10k_dir"
@@ -196,14 +196,14 @@ function install_fonts() {
 
   if [ -d "$fonts_src" ]; then
     cp -r "$fonts_src"/* "$fonts_dest"
-    fc-cache -v > /dev/null 2>&1
+    fc-cache -v 
     echo -e "${greenColour}[+] Fuentes locales instaladas.${endColour}"
   else
     echo -e "${yellowColour}[!] Descargando Hack Nerd Font de internet...${endColour}"
     wget -q "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Hack.zip" -O Hack.zip
-    unzip -o Hack.zip -d "$fonts_dest" > /dev/null 2>&1
+    unzip -o Hack.zip -d "$fonts_dest" 
     rm Hack.zip
-    fc-cache -v > /dev/null 2>&1
+    fc-cache -v 
   fi
 }
 
@@ -214,17 +214,17 @@ function install_bspwm_sxhkd() {
   rm -rf bspwm sxhkd
 
   # Silenciamos git
-  git clone https://github.com/baskerville/bspwm.git > /dev/null 2>&1
-  git clone https://github.com/baskerville/sxhkd.git > /dev/null 2>&1
+  git clone https://github.com/baskerville/bspwm.git 
+  git clone https://github.com/baskerville/sxhkd.git 
 
   cd bspwm
-  make > /dev/null 2>&1
-  make install > /dev/null 2>&1
+  make 
+  make install 
   cp contrib/freedesktop/bspwm.desktop /usr/share/xsessions/
 
   cd ../sxhkd
-  make > /dev/null 2>&1
-  make install > /dev/null 2>&1
+  make 
+  make install 
 
   cd ~
   echo -e "${greenColour}[+] BSPWM y SXHKD listos.${endColour}"
@@ -233,17 +233,17 @@ function install_bspwm_sxhkd() {
 # --- 6. POLYBAR ---
 function install_polybar() {
   echo -e "\n${purpleColour}[*] Compilando Polybar (esto tarda unos segundos)...${endColour}"
-  apt install -y libuv1-dev libxml2-dev > /dev/null 2>&1
+  apt install -y libuv1-dev libxml2-dev 
 
   cd /usr/local/src
   rm -rf polybar
-  git clone --recursive https://github.com/polybar/polybar.git > /dev/null 2>&1
+  git clone --recursive https://github.com/polybar/polybar.git  
 
   cd polybar
   mkdir build && cd build
-  cmake .. -DBUILD_DOC=OFF -DENABLE_CURL=OFF > /dev/null 2>&1
-  make -j$(nproc) > /dev/null 2>&1
-  make install > /dev/null 2>&1
+  cmake .. -DBUILD_DOC=OFF -DENABLE_CURL=OFF  
+  make -j$(nproc)  
+  make install  
 
   echo -e "${greenColour}[+] Polybar instalada.${endColour}"
 }
@@ -256,15 +256,15 @@ function install_picom() {
     libpcre2-dev libpixman-1-dev libx11-xcb-dev libxcb1-dev libxcb-composite0-dev \
     libxcb-damage0-dev libxcb-glx0-dev libxcb-image0-dev libxcb-present-dev \
     libxcb-randr0-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-shape0-dev \
-    libxcb-util-dev libxcb-xfixes0-dev meson ninja-build uthash-dev > /dev/null 2>&1
+    libxcb-util-dev libxcb-xfixes0-dev meson ninja-build uthash-dev  
 
   cd /usr/local/src
   rm -rf picom
-  git clone https://github.com/yshui/picom.git > /dev/null 2>&1
+  git clone https://github.com/yshui/picom.git  
   cd picom
-  meson setup --buildtype=release build > /dev/null 2>&1
-  ninja -C build > /dev/null 2>&1
-  ninja -C build install > /dev/null 2>&1
+  meson setup --buildtype=release build  
+  ninja -C build  
+  ninja -C build install  
 
   echo -e "${greenColour}[+] Picom instalado.${endColour}"
 }
@@ -278,7 +278,7 @@ function install_kitty() {
   
   rm -rf kitty
   mkdir -p kitty
-  tar -xf kitty.txz -C kitty > /dev/null 2>&1
+  tar -xf kitty.txz -C kitty  
   rm kitty.txz
 
   ln -sf /opt/kitty/bin/kitty /usr/local/bin/kitty
@@ -300,7 +300,7 @@ function install_neovim() {
   # 1. Instalar binario (Silencioso)
   wget -q "https://github.com/neovim/neovim/releases/download/v0.11.5/nvim-linux-x86_64.tar.gz" -O nvim.tar.gz
   rm -rf nvim
-  tar -xzf nvim.tar.gz > /dev/null 2>&1
+  tar -xzf nvim.tar.gz  
   
   extracted_dir=$(find . -maxdepth 1 -type d -name "nvim-linux*" | head -n 1)
   if [ -n "$extracted_dir" ]; then
@@ -321,7 +321,7 @@ function install_neovim() {
       rm -rf "$nvim_config_dir" "$real_home/.local/share/nvim"
       
       # Clonamos el starter oficial
-      git clone https://github.com/LazyVim/starter "$nvim_config_dir" > /dev/null 2>&1
+      git clone https://github.com/LazyVim/starter "$nvim_config_dir"  
       
       # Borramos la carpeta .git para que sea TU configuración, no un repo de ellos
       rm -rf "$nvim_config_dir/.git"
@@ -338,10 +338,10 @@ function install_tools(){
   cd /usr/local/src
   
   lsd_url="https://github.com/lsd-rs/lsd/releases/download/v1.0.0/lsd_1.0.0_amd64.deb"
-  wget -q "$lsd_url" -O lsd.deb && dpkg -i lsd.deb > /dev/null 2>&1 && rm lsd.deb
+  wget -q "$lsd_url" -O lsd.deb && dpkg -i lsd.deb   && rm lsd.deb
 
   bat_url="https://github.com/sharkdp/bat/releases/download/v0.24.0/bat_0.24.0_amd64.deb"
-  wget -q "$bat_url" -O bat.deb && dpkg -i bat.deb > /dev/null 2>&1 && rm bat.deb
+  wget -q "$bat_url" -O bat.deb && dpkg -i bat.deb   && rm bat.deb
   
   echo -e "${greenColour}[+] Herramientas instaladas.${endColour}"
 }
@@ -370,7 +370,7 @@ function install_wallpaper() {
   # Aplicar fondo inmediatamente (para comprobar que funciona)
   first_wall=$(find "$user_wall_dir" -type f \( -name "*.jpg" -o -name "*.png" \) | head -n 1)
   if [ -n "$first_wall" ]; then
-      su - "$real_user" -c "DISPLAY=:0 feh --bg-fill '$first_wall'" > /dev/null 2>&1
+      su - "$real_user" -c "DISPLAY=:0 feh --bg-fill '$first_wall'"  
   fi
 }
 
