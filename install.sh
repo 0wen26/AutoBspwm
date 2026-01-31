@@ -374,11 +374,8 @@ function install_wallpaper() {
 function setup_xinitrc() {
   echo -e "\n${yellowColour}[*] Configurando el arranque automático de X (xinitrc)...${endColour}"
 
-  # Eliminamos el espacio entre << y EOF
-  cat <<EOF > "$real_home/.xinitrc"
-  sxhkd &
-  exec bspwm
-  EOF
+  # Usamos \n para los saltos de línea. Así no importa la indentación del script.
+  printf "sxhkd &\nexec bspwm\n" > "$real_home/.xinitrc"
 
   # Ajustamos permisos
   chown "$real_user:$real_user" "$real_home/.xinitrc"
