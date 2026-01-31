@@ -372,17 +372,54 @@ function install_wallpaper() {
   fi
 }
 function setup_xinitrc() {
-  echo -e "\n${yellowColour}[*] Configurando el arranque automático de X (xinitrc)...${endColour}"
+  echo -e "\n${yellowColour}[*] Configurando el archivo .xinitrc...${endColour}"
 
-  # Usamos \n para los saltos de línea. Así no importa la indentación del script.
+  # Creamos el archivo sin problemas de indentación
   printf "sxhkd &\nexec bspwm\n" > "$real_home/.xinitrc"
 
   # Ajustamos permisos
   chown "$real_user:$real_user" "$real_home/.xinitrc"
 }
 
+function enable_autostart_x() {
+  echo -e "\n${yellowColour}[*] Configurando inicio automático de X al loguearse...${endColour}"
+  
+  # Este bloque detecta si estás en la tty1 (el login normal) y lanza startx
+  # Lo añadimos al .zshrc del usuario real
+  cat <<'EOF' >> "$real_home/.zshrc"
+
+# Autostart X11 on tty1 login
+if [ -z "$DISPLAY" ] && [ "$XDG_VTNR" -eq 1 ]; then
+  exec startx
+fi
+EOF
+
+  chown "$real_user:$real_user" "$real_home/.zshrc"
+  echo -e "${greenColour}[+] Autostart configurado en .zshrc.${endColour}"
+}
+function install_hardware_tools() {
+  echo -e "\n${yellowColour}[*] Instalando herramientas de hardware (Audio, Bluetooth, WiFi)...${endColour}"
+  
+  # Audio y Bluetooth
+  apt install -y pulseaudio pavucontrol alsa-utils \
+  bluez bluez-tools pulseaudio-module-bluetooth \
+  network-manager-gnome
+  
+  # Habilitar servicios
+  systemctl enable bluetooth
+  
+  # Añadir el applet de red al inicio (opcional pero recomendado)
+  # Esto se suele poner en el bspwmrc: nm-applet &
+}
+function install_apps() {
+  echo -e "\n${blueColour}[*] Instalando Firefox y herramientas básicas...${endColour}"
+  apt install -y firefox-esr thunar thunar-archive-plugin xarchiver
+}
+
 # --- EJECUCIÓN ---
 install_dependencies
+install_hardware_tools
+install_apps
 install_dotfiles
 install_zsh_omz
 install_fonts
@@ -394,5 +431,6 @@ install_neovim
 install_tools
 install_wallpaper
 setup_xinitrc
+enable_autostart_x
 
 echo -e "\n${greenColour}[✔] INSTALACIÓN COMPLETADA. REINICIA TU SISTEMA.${endColour}\n"
