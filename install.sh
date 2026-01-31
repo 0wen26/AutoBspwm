@@ -28,12 +28,9 @@ real_home="/home/$real_user"
 script_dir="$(dirname "$(readlink -f "$0")")"
 # --- 1. DEPENDENCIAS ---
 function install_dependencies() {
-  echo -e "\n${yellowColour}[*] Actualizando sistema e instalando dependencias... ${endColour}"
-  
+  echo -e "\n${yellowColour}[*] Instalando dependencias corregidas... ${endColour}"
   apt update
-
-  echo -e "   [i] Instalando librerías gráficas y de compilación..."
-  # He añadido las librerías EWMH, KEYSYMS y XINERAMA que te faltaban
+  # Añadimos libxcb-ewmh-dev y libxcb-keysyms1-dev a tu lista actual
   apt install -y build-essential git vim cmake pkg-config \
   libxcb-util0-dev libxcb-ewmh-dev libxcb-randr0-dev \
   libxcb-icccm4-dev libxcb-keysyms1-dev libxcb-xinerama0-dev \
@@ -43,7 +40,6 @@ function install_dependencies() {
   rofi feh fzf curl wget unzip zsh xorg xinit \
   dunst libnotify-bin flameshot scrot lxappearance papirus-icon-theme \
   ripgrep fd-find npm python3-venv 
-  
   mkdir -p /home/owen/.config
 }
 
@@ -375,6 +371,18 @@ function install_wallpaper() {
       su - "$real_user" -c "DISPLAY=:0 feh --bg-fill '$first_wall'"  
   fi
 }
+function setup_xinitrc() {
+  echo -e "\n${yellowColour}[*] Configurando el arranque automático de X (xinitrc)...${endColour}"
+
+  # Eliminamos el espacio entre << y EOF
+  cat <<EOF > "$real_home/.xinitrc"
+  sxhkd &
+  exec bspwm
+  EOF
+
+  # Ajustamos permisos
+  chown "$real_user:$real_user" "$real_home/.xinitrc"
+}
 
 # --- EJECUCIÓN ---
 install_dependencies
@@ -388,5 +396,6 @@ install_kitty
 install_neovim
 install_tools
 install_wallpaper
+setup_xinitrc
 
 echo -e "\n${greenColour}[✔] INSTALACIÓN COMPLETADA. REINICIA TU SISTEMA.${endColour}\n"
