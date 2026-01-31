@@ -43,7 +43,7 @@ function install_dependencies() {
   rofi feh fzf curl wget unzip zsh \
   dunst libnotify-bin flameshot scrot lxappearance papirus-icon-theme \
   xorg xinit \
-  ripgrep fd-find npm python3-venv > 
+  ripgrep fd-find npm python3-venv 
 }
 
 # --- 2. CONFIGURACIÓN (DOTFILES) ---
