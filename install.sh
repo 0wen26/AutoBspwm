@@ -39,7 +39,7 @@ function install_dependencies() {
   libxcb-image0-dev libxcb-cursor-dev xcb-proto python3-xcbgen \
   rofi feh fzf curl wget unzip zsh xorg xinit \
   dunst libnotify-bin flameshot scrot lxappearance papirus-icon-theme \
-  ripgrep fd-find npm python3-venv 
+  ripgrep fd-find npm python3-venv net-tools
   mkdir -p "$real_home/.config"
 }
 
