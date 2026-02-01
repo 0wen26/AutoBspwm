@@ -289,13 +289,12 @@ function install_kitty() {
   echo -e "${greenColour}[+] Kitty instalada.${endColour}"
 }
 
-# --- 9. NEOVIM ---
 # --- 9. NEOVIM + LAZYVIM ---
 function install_neovim() {
   echo -e "\n${blueColour}[*] Instalando Neovim y LazyVim...${endColour}"
   cd /opt
   
-  # 1. Instalar binario (Silencioso)
+  # 1. Instalar binario (Silencioso) 
   wget -q "https://github.com/neovim/neovim/releases/download/v0.11.5/nvim-linux-x86_64.tar.gz" -O nvim.tar.gz
   rm -rf nvim
   tar -xzf nvim.tar.gz  
@@ -307,27 +306,34 @@ function install_neovim() {
   rm nvim.tar.gz
   ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim
 
-  # 2. Configurar LazyVim (Si no tienes config propia)
-  # Primero miramos si install_dotfiles ya puso algo en ~/.config/nvim
+  # 2. Configurar LazyVim para el usuario 
   nvim_config_dir="$real_home/.config/nvim"
   
   if [ -d "$nvim_config_dir" ] && [ "$(ls -A $nvim_config_dir)" ]; then
-      echo -e "   [i] Detectada configuración propia de Neovim."
+      echo -e "   [i] Detectada configuración propia de Neovim." 
   else
-      echo -e "   [i] No hay configuración detectada. Clonando LazyVim Starter..."
-      # Hacemos backup por seguridad
-      rm -rf "$nvim_config_dir" "$real_home/.local/share/nvim"
-      
-      # Clonamos el starter oficial
-      git clone https://github.com/LazyVim/starter "$nvim_config_dir"  
-      
-      # Borramos la carpeta .git para que sea TU configuración, no un repo de ellos
-      rm -rf "$nvim_config_dir/.git"
-      
-      chown -R "$real_user:$real_user" "$nvim_config_dir"
+      echo -e "   [i] No hay configuración detectada. Clonando LazyVim Starter..." 
+      rm -rf "$nvim_config_dir" "$real_home/.local/share/nvim" 
+      git clone https://github.com/LazyVim/starter "$nvim_config_dir" 
+      rm -rf "$nvim_config_dir/.git" 
+      chown -R "$real_user:$real_user" "$nvim_config_dir" 
   fi
 
-  echo -e "${greenColour}[+] Neovim + LazyVim instalados.${endColour}"
+  # 3. UNIFICAR CONFIGURACIÓN CON ROOT 🔥 (NUEVO)
+  echo -e "   [i] Vinculando configuración de Neovim para ROOT..."
+  
+  # Limpiamos rastros previos en root
+  rm -rf /root/.config/nvim /root/.local/share/nvim /root/.local/state/nvim /root/.cache/nvim
+  
+  # Creamos los enlaces simbólicos hacia la carpeta del usuario 
+  mkdir -p /root/.config
+  ln -s "$nvim_config_dir" /root/.config/nvim
+  
+  # Vinculamos también la carpeta de datos para no descargar los plugins dos veces
+  mkdir -p /root/.local/share
+  ln -s "$real_home/.local/share/nvim" /root/.local/share/nvim
+
+  echo -e "${greenColour}[+] Neovim + LazyVim instalados y unificados con Root.${endColour}" 
 }
 
 # --- 10. TOOLS EXTRA ---
