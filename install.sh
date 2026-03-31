@@ -417,6 +417,12 @@ function install_apps() {
   echo -e "\n${blueColour}[*] Instalando Firefox y herramientas básicas...${endColour}"
   apt install -y firefox-esr thunar thunar-archive-plugin xarchiver
 }
+function setup_keychron_v1() {
+  echo -e "\n${yellowColour}[*] Configurando permisos para Keychron V1 (VIA)...${endColour}"
+  echo 'KERNEL=="hidraw*", SUBSYSTEM=="hidraw", MODE="0666", TAG+="uaccess"' | sudo tee /etc/udev/rules.d/99-keychron.rules
+  sudo udevadm control --reload-rules && sudo udevadm trigger
+  echo -e "${greenColour}[+] Reglas de udev aplicadas.${endColour}"
+}
 
 # --- EJECUCIÓN ---
 install_dependencies
@@ -434,5 +440,6 @@ install_tools
 install_wallpaper
 setup_xinitrc
 enable_autostart_x
+setup_keychron_v1
 
 echo -e "\n${greenColour}[✔] INSTALACIÓN COMPLETADA. REINICIA TU SISTEMA.${endColour}\n"
